@@ -32,8 +32,8 @@ app.get('/get/:pageId', async (c) => {
 
 app.get('/key', async (c) => {
     // generate a unique identifier for this request
-    const newKey = await crypto.randomUUID()
     const requestIP = c.req.header('CF-Connecting-Ip')
+    const newKey = await crypto.randomUUID()
 
     const data = {
         source: requestIP,
@@ -46,6 +46,34 @@ app.get('/key', async (c) => {
         key: newKey,
         ttl: 90
     })
+})
+
+app.post('/new/:pageId', async (c) => {
+    const requestIP = c.req.header('CF-Connecting-Ip')
+    const pageId = c.req.param('pageId')
+    let req = {}
+
+    // Try to parse body as JSON, catch error if it fails and return bad request
+    try {
+        // Make sure we're getting a json here
+        if (c.req.header('Content-Type') !== "application/json")
+            throw new Error()
+        
+        req = await c.req.json()
+    }
+    catch {
+        c.header('Content-Type', 'text/plain')
+        return c.text('Bad Request', 400)
+    }
+    
+    // check if requester has a valid key
+    const key = await c.env.KEYS.get(req.key)
+
+    //TODO: this is unfinished!! get rid of this console long when it isn't!!
+    console.log(key)
+
+    c.header('Content-Type', 'text/plain')
+    return c.text('OK', 200) //TODO: Stub
 })
 
 export default app
