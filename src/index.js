@@ -6,6 +6,10 @@ const app = new Hono()
 // make that json pretty!!
 app.use('*', prettyJSON())
 
+app.get('/', (c) => {
+    return c.body("Hello! Use the /get endpoint to query comments. The other routes are reserved for the frontend.")
+})
+
 // get all comments for a specific page.
 app.get('/get/:pageId', async (c) => {
     // get the page ID from the request path
