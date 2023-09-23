@@ -1,0 +1,12 @@
+name = "blog-comments"
+main = "src/index.js"
+compatibility_date = "2023-09-18"
+
+kv_namespaces = [
+    { binding = "ADDRESSES", id = "cc008dbb21984bb48fbf2635379572d5", preview_id = "cc008dbb21984bb48fbf2635379572d5" },
+    { binding = "KEYS", id = "af91891a3f1e4331afd71d91627e9a8f", preview_id = "af91891a3f1e4331afd71d91627e9a8f" }
+]
+
+d1_databases = [
+    { binding = "DB", database_name = "tabbypage", database_id = "796eb66c-eada-4d80-a7fd-314064a04259" }
+]
