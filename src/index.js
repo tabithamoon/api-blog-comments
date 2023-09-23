@@ -26,4 +26,22 @@ app.get('/get/:pageId', async (c) => {
     return c.json(comments.results)
 })
 
+app.get('/getKey', async (c) => {
+    // generate a unique identifier for this request
+    const newKey = await crypto.randomUUID()
+    const requestIP = c.req.header('CF-Connecting-Ip')
+
+    const data = {
+        source: requestIP,
+        status: "created"
+    }
+
+    await c.env.KEYS.put(newKey, JSON.stringify(data), {expirationTtl: 90})
+
+    return c.json({
+        key: newKey,
+        ttl: 90
+    })
+})
+
 export default app
