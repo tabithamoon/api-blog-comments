@@ -30,7 +30,7 @@ app.get('/get/:pageId', async (c) => {
     return c.json(comments.results)
 })
 
-app.get('/getKey', async (c) => {
+app.get('/key', async (c) => {
     // generate a unique identifier for this request
     const newKey = await crypto.randomUUID()
     const requestIP = c.req.header('CF-Connecting-Ip')
