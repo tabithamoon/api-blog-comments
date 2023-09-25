@@ -49,31 +49,80 @@ app.get('/key', async (c) => {
 })
 
 app.post('/new/:pageId', async (c) => {
+    // store IP address and requested page
     const requestIP = c.req.header('CF-Connecting-Ip')
     const pageId = c.req.param('pageId')
+
+    // our request object we're about to fill with parsed data
     let req = {}
 
-    // Try to parse body as JSON, catch error if it fails and return bad request
+    // try to parse body as JSON
+    // catch error if it fails and return a bad request code
     try {
-        // Make sure we're getting a json here
         if (c.req.header('Content-Type') !== "application/json")
             throw new Error()
         
         req = await c.req.json()
     }
     catch {
-        c.header('Content-Type', 'text/plain')
         return c.text('Bad Request', 400)
     }
     
-    // check if requester has a valid key
-    const key = await c.env.KEYS.get(req.key)
+    // get key and IP address info
+    const key = JSON.parse(await c.env.KEYS.get(req.key))
+    const addr = await c.env.ADDRESSES.get(requestIP)
 
-    //TODO: this is unfinished!! get rid of this console long when it isn't!!
-    console.log(key)
+    // boot them out if they don't have a nice and fresh key
+    if(key === null)
+        return c.text('Unauthorized', 401)
 
-    c.header('Content-Type', 'text/plain')
-    return c.text('OK', 200) //TODO: Stub
+    // boot them out if their address doesn't match the key's origin
+    if(key.source !== requestIP)
+        return c.text('Unauthorized', 401)
+
+    // boot them out if they're trying to spam. naughty!
+    if(addr !== null)
+        return c.text('Too many requests', 429)
+
+    // check if the requested page exists
+    const pagecheck = await c.env.DB.prepare(
+        `SELECT
+            PageId
+        FROM
+            Pages
+        WHERE
+            PageId = ?`
+    ).bind(pageId).all()
+
+    if(pagecheck.results.length <= 0)
+        return c.text('Bad request', 400)
+
+    // generate an unique comment ID
+    const newKey = await crypto.randomUUID()
+
+    // save that comment!! yay
+    const result = await c.env.DB.prepare(
+        `INSERT INTO Comments
+        (PageId, CommentId, Author, Body, Timestamp)
+        VALUES (?1, '${newKey}', ?2, ?3, '${new Date().toISOString()}')
+        `
+    ).bind(
+        pageId,
+        req.author,
+        req.body
+    ).run()
+
+    if (result.success) {
+        // store requester's address for 5 minutes, for basic spam prevention
+        await c.env.ADDRESSES.put(requestIP, 'posted', {expirationTtl: 300})
+        return c.text('OK', 200)
+    }
+    else {
+        // something went wrong 3:
+        // log it so i can figure out what i messed up
+        console.log(result)
+        return c.text('Internal server error', 500)
+    }
 })
 
 export default app
