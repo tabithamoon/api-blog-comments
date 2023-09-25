@@ -31,17 +31,29 @@ app.get('/get/:pageId', async (c) => {
 })
 
 app.get('/key', async (c) => {
-    // generate a unique identifier for this request
+    // get request's IP address
     const requestIP = c.req.header('CF-Connecting-Ip')
+
+    // check if address already commented recently
+    const addr = await c.env.ADDRESSES.get(requestIP)
+
+    // boot them out if that is the case. don't spam!
+    if(addr !== null)
+        return c.text('Too many requests', 429)
+
+    // if they ain't spamming, generate a fresh key for our fine user
     const newKey = await crypto.randomUUID()
 
+    // assemble our object
     const data = {
         source: requestIP,
         status: "created"
     }
 
+    // store it in KV
     await c.env.KEYS.put(newKey, JSON.stringify(data), {expirationTtl: 90})
 
+    // return it to the frontend
     return c.json({
         key: newKey,
         ttl: 90
