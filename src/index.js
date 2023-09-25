@@ -54,10 +54,7 @@ app.get('/key', async (c) => {
     await c.env.KEYS.put(newKey, JSON.stringify(data), {expirationTtl: 90})
 
     // return it to the frontend
-    return c.json({
-        key: newKey,
-        ttl: 90
-    })
+    return c.text(newKey, 200)
 })
 
 app.post('/new/:pageId', async (c) => {
