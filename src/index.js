@@ -77,6 +77,10 @@ app.post('/new/:slug', async (c) => {
         return c.text('Bad Request', 400)
     }
     
+    // Return unauthorized if author or body are too long
+    if(req.body.length() > 512 || req.author.length() > 32)
+        return c.text("Content too long", 400)
+
     // get key and IP address info
     const key = JSON.parse(await c.env.KEYS.get(req.key))
     const addr = await c.env.ADDRESSES.get(requestIP)
