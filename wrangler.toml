@@ -1,4 +1,4 @@
-name = "blog-comments"
+name = "api-blog-comments"
 main = "src/index.js"
 compatibility_date = "2023-09-18"
 
