@@ -11,9 +11,9 @@ app.get('/', (c) => {
 })
 
 // get all comments for a specific page.
-app.get('/get/:pageId', async (c) => {
+app.get('/get/:slug', async (c) => {
     // get the page ID from the request path
-    const pageId = c.req.param('pageId')
+    const slug = c.req.param('slug')
     
     // call me a db admin with my amazingly complex queries
     const comments = await c.env.DB.prepare(
@@ -24,8 +24,8 @@ app.get('/get/:pageId', async (c) => {
         FROM
             Comments
         WHERE
-            PageId = ?`
-    ).bind(pageId).all()
+            Slug = ?`
+    ).bind(slug).all()
 
     return c.json(comments.results)
 })
@@ -57,10 +57,10 @@ app.get('/key', async (c) => {
     return c.text(newKey, 200)
 })
 
-app.post('/new/:pageId', async (c) => {
+app.post('/new/:slug', async (c) => {
     // store IP address and requested page
     const requestIP = c.req.header('CF-Connecting-Ip')
-    const pageId = c.req.param('pageId')
+    const slug = c.req.param('slug')
 
     // our request object we're about to fill with parsed data
     let req = {}
@@ -96,12 +96,12 @@ app.post('/new/:pageId', async (c) => {
     // check if the requested page exists
     const pagecheck = await c.env.DB.prepare(
         `SELECT
-            PageId
+            Slug
         FROM
             Pages
         WHERE
-            PageId = ?`
-    ).bind(pageId).all()
+            Slug = ?`
+    ).bind(slug).all()
 
     if(pagecheck.results.length <= 0)
         return c.text('Bad request', 400)
@@ -112,11 +112,11 @@ app.post('/new/:pageId', async (c) => {
     // save that comment!! yay
     const result = await c.env.DB.prepare(
         `INSERT INTO Comments
-        (PageId, CommentId, Author, Body, Timestamp)
+        (Slug, CommentId, Author, Body, Timestamp)
         VALUES (?1, '${newKey}', ?2, ?3, '${new Date().toISOString()}')
         `
     ).bind(
-        pageId,
+        slug,
         req.author,
         req.body
     ).run()
