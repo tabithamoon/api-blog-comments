@@ -140,10 +140,10 @@ app.post('/new/:slug', async (c) => {
 
     if (result.success) {
         // store requester's address for 5 minutes, for basic spam prevention
-        await c.env.ADDRESSES.put(requestIP, 'posted', {expirationTtl: 300})
-        return c.text('OK', 200), {
+        c.env.ADDRESSES.put(requestIP, 'posted', {expirationTtl: 300})
+        return c.text('OK', 200, {
             'Access-Control-Allow-Origin': 'https://tabby.page'
-        }
+        })
     }
     else {
         // something went wrong 3:
