@@ -86,6 +86,11 @@ app.post('/new/:slug', async (c) => {
             'Access-Control-Allow-Origin': 'https://tabby.page'
         })
 
+    if(req.body == '' || req.author == '')
+        return c.text("Author or body cannot be empty", 400, {
+            'Access-Control-Allow-Origin': 'https://tabby.page'
+        })
+
     // get key and IP address info
     const key = JSON.parse(await c.env.KEYS.get(req.key))
     const addr = await c.env.ADDRESSES.get(requestIP)
@@ -130,7 +135,7 @@ app.post('/new/:slug', async (c) => {
     const result = await c.env.DB.prepare(
         `INSERT INTO Comments
         (Slug, CommentId, Author, Body, Timestamp)
-        VALUES (?1, '${newKey}', ?2, ?3, '${new Date().toISOString()}')
+        VALUES (?1, '${newKey}', ?2, ?3, '${new Date().toISOString()}', '${requestIP}')
         `
     ).bind(
         slug,
