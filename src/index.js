@@ -134,7 +134,7 @@ app.post('/new/:slug', async (c) => {
     // save that comment!! yay
     const result = await c.env.DB.prepare(
         `INSERT INTO Comments
-        (Slug, CommentId, Author, Body, Timestamp)
+        (Slug, CommentId, Author, Body, Timestamp, IpAddress)
         VALUES (?1, '${newKey}', ?2, ?3, '${new Date().toISOString()}', '${requestIP}')
         `
     ).bind(
